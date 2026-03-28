@@ -19,30 +19,15 @@ int main(void) {
     float cube_x = 160.0f, cube_y = 120.0f;
     float dx = 1.2f, dy = 0.9f;
     float rx = 0, ry = 0, rz = 0;
-    
-    const char *msg = "3D Cube Demo by GNUfault";
-    int msg_len = strlen(msg);
-    int total_width;
-    int start_x;
-    
-    int active_char = 0;
-    float char_time = 0;
 
     gfx_Begin();
     gfx_SetDrawBuffer();
     
-    gfx_SetTextTransparentColor(0);
-    gfx_SetTextBGColor(0);
-    gfx_SetTextFGColor(255);
-
     for (int i = 0; i < 256; i++) {
         uint8_t gray = (uint8_t)i;
         uint16_t color = ((gray >> 3) << 11) | ((gray >> 2) << 5) | (gray >> 3);
         gfx_palette[i] = color;
     }
-
-    total_width = gfx_GetStringWidth(msg);
-    start_x = (GFX_LCD_WIDTH - total_width) / 2;
 
     while (!os_GetCSC()) {
         gfx_FillScreen(0);
@@ -76,6 +61,7 @@ int main(void) {
 
         for (int i = 0; i < 6; i++) {
             int i0 = faces[i][0], i1 = faces[i][1], i2 = faces[i][2], i3 = faces[i][3];
+            
             long cp = (long)(projected_pts[i1][0] - projected_pts[i0][0]) * (projected_pts[i2][1] - projected_pts[i0][1]) -
                       (long)(projected_pts[i1][1] - projected_pts[i0][1]) * (projected_pts[i2][0] - projected_pts[i0][0]);
 
@@ -84,30 +70,11 @@ int main(void) {
                 int shade = 160 - (int)(avg_z * 3.0f);
                 if (shade < 40) shade = 40;
                 if (shade > 255) shade = 255;
+                
                 gfx_SetColor((uint8_t)shade);
                 gfx_FillTriangle(projected_pts[i0][0], projected_pts[i0][1], projected_pts[i1][0], projected_pts[i1][1], projected_pts[i2][0], projected_pts[i2][1]);
                 gfx_FillTriangle(projected_pts[i0][0], projected_pts[i0][1], projected_pts[i2][0], projected_pts[i2][1], projected_pts[i3][0], projected_pts[i3][1]);
             }
-        }
-
-        char_time += 0.8f;
-        if (char_time >= 3.14159f) {
-            char_time -= 3.14159f;
-            active_char++;
-            if (active_char >= msg_len) {
-                active_char = 0;
-            }
-        }
-
-        int current_draw_x = start_x;
-        for (int i = 0; i < msg_len; i++) {
-            int y_off = 0;
-            if (i == active_char) {
-                y_off = -(int)(25.0f * sinf(char_time));
-            }
-            gfx_SetTextXY(current_draw_x, 210 + y_off);
-            gfx_PrintChar(msg[i]);
-            current_draw_x += gfx_GetCharWidth(msg[i]);
         }
 
         gfx_SwapDraw();
